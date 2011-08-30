@@ -12,6 +12,7 @@ use Net::Jabber;
 use Time::HiRes;
 use Sys::Hostname;
 use Log::Log4perl qw(:easy);
+Log::Log4perl->easy_init($DEBUG);
 use utf8;
 #use Data::Dumper; #For testing only.
 
@@ -470,6 +471,9 @@ sub Process { # Call connection process.
     my $self = shift;
     my $timeout_seconds = shift;
 
+    # use Data::Dumper;
+    # print STDERR Dumper($self) . "\n";
+
     #If not passed explicitly
     $timeout_seconds = $self->process_timeout if(!defined $timeout_seconds);
 
@@ -501,14 +505,16 @@ sub Start {
     while(1) { # Loop for ever!
         # Process and re-connect if you have to.
         my $reconnect_timeout = 1;
+        INFO("connecting...");
         eval {$self->Process($process_timeout)};
 
         if($@) { #Assume the connection is down...
-            my $message = "Disconnected from " . $self->server . ":" . $self->port
-                        . " as " . $self->username;
-            ERROR("$message Reconnecting...");
-            sleep 5; # TODO: Make re-connect time flexible somehow
-            $self->ReconnectToServer();
+            ERROR( $@ );
+            #my $message = "Disconnected from " . $self->server . ":" . $self->port
+            #            . " as " . $self->username;
+            #ERROR("$message Reconnecting...");
+            #sleep 1; # TODO: Make re-connect time flexible somehow
+            #$self->ReconnectToServer();
         }
 
         # Call background function
@@ -558,7 +564,7 @@ Disconnects from server if client object is defined. Assures the client object i
 sub Disconnect {
     my $self = shift;
 
-    $self->connect_time('9' x 10); # Way in the future
+    $self->connect_time( '9' x 10); # Way in the future
 
     INFO("Disconnecting from server");
     return if(!defined $self->jabber_client); # do not proceed, no object.
@@ -581,7 +587,8 @@ sub IsConnected {
     my $self = shift;
 
     DEBUG("REF = " . ref($self->jabber_client));
-    return $self->connect_time;
+    return  ref($self->jabber_client);
+    # return $self->connect_time;
 }
 
 # TODO: ***NEED VERY GOOD DOCUMENTATION HERE*****
@@ -656,13 +663,19 @@ sub _process_jabber_message {
         my $request;
         foreach my $address_type (@aliases_to_respond_to) {
             my $qm_address_type = quotemeta($address_type);
+            DEBUG( "expecting: " . $qm_address_type . " got " . $body );
             next if($body !~ m/^\s*$qm_address_type\s*(\S.*)$/ms);
             $request = $1;
             $bot_address_from = $address_type;
             last; # do not need to loop any more.
         }
-        DEBUG("Message not relevant to bot");
-        return if(!defined $request);
+        if ( !defined $request ) {
+            DEBUG("Message not relevant to bot");
+            return;
+        }
+        else {
+            DEBUG( "might answer $request" );
+        }
         $body = $request;
     }
 
@@ -704,6 +717,7 @@ sub get_responses {
     my @aliases_to_respond_to;
     if(defined $self->forums_and_responses->{$forum}) {
         @aliases_to_respond_to = @{$self->forums_and_responses->{$forum}};
+        DEBUG( "responding to: " . join( ",", @aliases_to_respond_to ) );
     }
 
     return @aliases_to_respond_to;

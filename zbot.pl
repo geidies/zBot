@@ -66,12 +66,12 @@ sub newMessage {
 	my $function = Plugins::getFunc(lc($functionKey));
 	if(! $function == 0) {
 		$botMessage = &{$function}($bot,$user,@words);
-#		if($type eq "groupchat") {
-#			my $roomname = $user;
-#			$roomname =~ s/(.*?)@.*/$1/;
-#			$bot->SendGroupMessage($reply, $botMessage);
-#		} else {
-		if(not($type eq "groupchat") or Configs::isInForum($reply)) {
+		if($type eq "groupchat" or Configs::isInForum($reply) ) {
+			my $roomname = $user;
+			$roomname =~ s/(.*?)@.*/$1/;
+			$bot->SendGroupMessage($reply, $botMessage);
+		} else {
+                # if(not($type eq "groupchat") or Configs::isInForum($reply)) {
 			$bot->SendJabberMessage($reply, $botMessage, $type,"");
 			if(Configs::getLogging() == 1){
 				print LOGFILE "(".localtime(time).") $botname: $botMessage\n\n";
