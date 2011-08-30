@@ -24,7 +24,9 @@ sub getExcuse {
     srand(time|$$) if $[ < 5.6;
 
     my $file = __FILE__;
-    open ( EXCUSES, `dirname $file` . "/data/excuses.txt" ) || return "unable to read excuses (yes, this one is meta)";
+    my $dir  = `dirname $file`;
+    chomp( $dir );
+    open ( EXCUSES, $dir . "/data/excuses.txt" ) || return "unable to read excuses (yes, this one is meta)";
     my @excuses=();
 
     my $i=0;
