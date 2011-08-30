@@ -24,7 +24,7 @@ sub getExcuse {
     srand(time|$$) if $[ < 5.6;
 
 
-    open (EXCUSES, "data/excuses.txt" ) || die;
+    open (EXCUSES, "data/excuses.txt" ) || return "unable to read excuses (yes, this one is meta)";
     my @excuses=();
 
     my $i=0;
@@ -42,5 +42,4 @@ sub getExcuse {
 # Keyword when the plugin should be called
 # Functionpointer to the main routine of the plugin (in this example 'printHelloWorld')
 # Description of Plugin for help command
-Plugins::registerPlugin("operator!",\&printHelloWorld,"gets a BOFH style excuse","call the SysOp",\&idlefunc); # in english: calls Helloworld
-
+Plugins::registerPlugin("operator!",\&getExcuse,"gets a BOFH style excuse","call the SysOp",\&idlefunc); # in english: calls Helloworld
