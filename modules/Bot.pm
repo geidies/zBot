@@ -502,10 +502,15 @@ sub Start {
     my $last_background = time - $time_between_background_routines - 1; # Call background process every so often...
     my $counter = 0; # Keep track of how many times we've looped. Not sure if we'll use this long term.
 
+    my $i = 0;
+
     while(1) { # Loop for ever!
         # Process and re-connect if you have to.
         my $reconnect_timeout = 1;
-        INFO("connecting...");
+        $i = ++$i % 60;
+        unless ( $i ) {
+            INFO("controlloop.");
+        }
         eval {$self->Process($process_timeout)};
 
         if($@) { #Assume the connection is down...
