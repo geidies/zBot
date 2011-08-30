@@ -4,11 +4,14 @@ use strict;
 use warnings;
 our @ISA    = qw(Exporter);
 
-use utf8; # important if you wnat to use special characters
+use utf8;
 
 use lib "../modules";
 use Plugins;
-use Configs; # Is only needed to get the Admin
+
+use vars qw/ @excuses /;
+
+my @excuses;
 
 #
 # Sub: idlefunc
@@ -21,27 +24,24 @@ sub idlefunc {
 # This routine gets the user and parameters as arguments and should return the string that should be printed.
 # The name of this routine can be choosen free.
 sub getExcuse {
-    srand(time|$$) if $[ < 5.6;
+    my $j = int( rand() * scalar( @excuses ) );
+    return "The system is unavailable because: $excuses[$j]";
+}
 
+sub prepare {
+    # teh excuse list is "borrowed" from
+    # http://pages.cs.wisc.edu/~ballard/bofh/
     my $file = __FILE__;
     my $dir  = `dirname $file`;
     chomp( $dir );
     open ( EXCUSES, $dir . "/data/excuses.txt" ) || return "unable to read excuses (yes, this one is meta)";
-    my @excuses=();
 
-    my $i=0;
     while(<EXCUSES>) {
-        $excuses[$i]=$_;
-        $i++;
+        push @excuses, $_;
     }       
     close EXCUSES;
-
-    my $j = (rand(10000)*$$)%$i;
-    return $excuses[$j] . "\n";
 }
 
-# here the plugin is registered. Arguments are:
-# Keyword when the plugin should be called
-# Functionpointer to the main routine of the plugin (in this example 'printHelloWorld')
-# Description of Plugin for help command
+prepare();
+
 Plugins::registerPlugin("operator!",\&getExcuse,"gets a BOFH style excuse","call the SysOp",\&idlefunc); # in english: calls Helloworld
