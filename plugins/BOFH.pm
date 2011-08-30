@@ -23,8 +23,8 @@ sub idlefunc {
 sub getExcuse {
     srand(time|$$) if $[ < 5.6;
 
-
-    open (EXCUSES, "data/excuses.txt" ) || return "unable to read excuses (yes, this one is meta)";
+    my $file = __FILE__;
+    open ( EXCUSES, `dirname $file` . "/data/excuses.txt" ) || return "unable to read excuses (yes, this one is meta)";
     my @excuses=();
 
     my $i=0;
